@@ -4,11 +4,40 @@ import glob as glob
 import SimpleITK as sitk
 from scipy import stats
 import numpy as np
+import os
+np.set_printoptions(suppress=True)
 
 def Readimg(img_path):
     img = sitk.ReadImage(img_path)
     img = sitk.GetArrayFromImage(img)
+    img=np.rot90(img,1,axes=(0,2))
+    #img = np.rot90(img, 1, axes=(0, 1))
     return img
+
+def Readswc(swc_path):
+    swc=[]
+    with open(swc_path) as swc_file:
+        lines=swc_file.readlines()
+        for line in lines:
+            if line[0]=="#":
+                continue
+            line=line.split(" ")
+            swc.append(line)
+    swc=np.array(swc,dtype='float')
+    return swc
+
+def Writeimg(img,img_path):
+    img=np.rot90(img,1,axes=(0,2))
+    img = sitk.GetImageFromArray(img)
+    sitk.WriteImage(img, img_path)
+
+def Writeswc(swc,swc_path):
+    with open(swc_path,'w') as swc_file:
+        swc_file.write("##n,type,x,y,z,radius,parent\n")
+        for i in range(swc.shape[0]):
+            line=str(int(swc[i][0]))+" "+str(int(swc[i][1]))+" "+str(swc[i][2])+" "+str(swc[i][3])+" "+str(swc[i][4])+" "+str(swc[i][5])+" "+str(int(swc[i][6]))+"\n"
+            swc_file.write(line)
+
 
 def minsuminterval(img):  #寻找加和95%的最小区间
     # print(img)
